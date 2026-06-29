@@ -1,26 +1,49 @@
-const d=document.getElementById("date");
-d.value=new Date().toISOString().slice(0,16);
+const dateInput = document.getElementById("date");
+const sysInput = document.getElementById("sys");
+const diaInput = document.getElementById("dia");
+const pulseInput = document.getElementById("pulse");
+const sugarInput = document.getElementById("sugar");
+const fastingInput = document.getElementById("fasting");
+const positionInput = document.getElementById("position");
+const cuffInput = document.getElementById("cuff");
+const notesInput = document.getElementById("notes");
+const saveButton = document.getElementById("save");
+const status = document.getElementById("status");
 
-document.getElementById("save").onclick=async()=>{
-const body={
-date:d.value,
-systolic:+sys.value,
-diastolic:+dia.value,
-pulse:+pulse.value,
-bloodSugar:+sugar.value,
-fasting:fasting.checked,
-position:position.value,
-cuff:cuff.value,
-notes:notes.value
-};
+dateInput.value = new Date().toISOString().slice(0, 16);
 
-status.textContent="Saving...";
+saveButton.addEventListener("click", async () => {
+    status.textContent = "Saving...";
 
-const r=await fetch("/api/save",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify(body)
+    const body = {
+        date: dateInput.value,
+        systolic: Number(sysInput.value),
+        diastolic: Number(diaInput.value),
+        pulse: Number(pulseInput.value),
+        bloodSugar: Number(sugarInput.value),
+        fasting: fastingInput.checked,
+        position: positionInput.value,
+        cuff: cuffInput.value,
+        notes: notesInput.value
+    };
+
+    try {
+        const response = await fetch("/api/save", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(error);
+        }
+
+        status.textContent = "✅ Saved!";
+    } catch (err) {
+        console.error(err);
+        status.textContent = "❌ " + err.message;
+    }
 });
-
-status.textContent=r.ok?"Saved!":"Error saving.";
-};
