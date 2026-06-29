@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Health Tracker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="card">
+<h1>Health Tracker</h1>
+
+<label>Date/Time</label>
+<input type="datetime-local" id="date">
+
+<div class="row">
+<div>
+<label>Systolic</label>
+<input type="number" id="sys">
+</div>
+<div>
+<label>Diastolic</label>
+<input type="number" id="dia">
+</div>
+</div>
+
+<label>Pulse</label>
+<input type="number" id="pulse">
+
+<label>Blood Sugar</label>
+<input type="number" id="sugar">
+
+<label><input type="checkbox" id="fasting"> Fasting</label>
+
+<label>Body Position</label>
+<select id="position">
+<option>Sitting</option>
+<option>Standing</option>
+<option>Lying</option>
+</select>
+
+<label>Cuff Position</label>
+<select id="cuff">
+<option>Left Arm @ Heart Level</option>
+<option>Right Arm @ Heart Level</option>
+<option>Left Arm Below Heart</option>
+<option>Right Arm Below Heart</option>
+</select>
+
+<label>Notes</label>
+<textarea id="notes"></textarea>
+
+<button id="save">Save Reading</button>
+<p id="status"></p>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
