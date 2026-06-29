@@ -28,7 +28,7 @@ saveButton.addEventListener("click", async () => {
     };
 
     try {
-        const response = await fetch("/api/save", {
+        const response = await fetch("https://sbrewhealth.crysthigpen.workers.dev", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
