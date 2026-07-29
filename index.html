@@ -430,6 +430,14 @@
       </div>
     </div>
 
+    <div class="toggle-group">
+      <label class="field-label">Source</label>
+      <div class="segmented" id="sourceSegment">
+        <button type="button" class="active" data-value="Dexcom">Dexcom</button>
+        <button type="button" data-value="Meter">Meter</button>
+      </div>
+    </div>
+
     <button id="submitBtn">Log reading</button>
     <div id="statusMsg" class="status-msg"></div>
   </section>
@@ -450,12 +458,13 @@
 <script>
 /* ====================== CONFIG ====================== */
 // Set this to your Cloudflare Worker URL, e.g. "https://glow-tracker.yourname.workers.dev"
-const WORKER_URL = "https://sbrewhealth.crysthigpen.workers.dev";
+const WORKER_URL = "";
 /* ====================================================== */
 
 const bsValue = document.getElementById('bsValue');
 const fastingSwitch = document.getElementById('fastingSwitch');
 const timingSegment = document.getElementById('timingSegment');
+const sourceSegment = document.getElementById('sourceSegment');
 const submitBtn = document.getElementById('submitBtn');
 const statusMsg = document.getElementById('statusMsg');
 const recentList = document.getElementById('recentList');
@@ -463,6 +472,7 @@ const configWarning = document.getElementById('configWarning');
 
 let fasting = false;
 let timing = 'Before food';
+let source = 'Dexcom';
 
 if (!WORKER_URL) {
   configWarning.style.display = 'block';
@@ -479,6 +489,14 @@ timingSegment.querySelectorAll('button').forEach(btn => {
     timingSegment.querySelectorAll('button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     timing = btn.dataset.value;
+  });
+});
+
+sourceSegment.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    sourceSegment.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    source = btn.dataset.value;
   });
 });
 
@@ -520,6 +538,7 @@ function renderEntries(entries) {
           <div class="tags">
             <span class="pill">${e.fasting ? 'Fasting' : 'Not fasting'}</span>
             <span class="pill">${e.timing}</span>
+            <span class="pill">${e.source || ''}</span>
           </div>
           <div class="timestamp">${formatTime(e.loggedAt)}</div>
         </div>
@@ -572,6 +591,7 @@ async function submitEntry() {
         value,
         fasting,
         timing,
+        source,
         loggedAt: new Date().toISOString()
       })
     });
