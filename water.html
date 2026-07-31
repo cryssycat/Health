@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glow · Hydration Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky: #bfe3f2;
+    --sky-soft: #eaf6fb;
+    --blush: #f7cfe0;
+    --blush-soft: #fdeaf1;
+    --lilac: #e3d2ee;
+    --ink: #3d4256;
+    --ink-soft: #7c8092;
+    --glass: rgba(255,255,255,0.55);
+    --glass-strong: rgba(255,255,255,0.72);
+    --glass-border: rgba(255,255,255,0.65);
+    --shadow: 0 20px 60px rgba(133,164,197,0.25), 0 4px 16px rgba(214,160,190,0.15);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    min-height: 100vh;
+    font-family: 'Quicksand', sans-serif;
+    color: var(--ink);
+  }
+
+  body{
+    background: linear-gradient(160deg, var(--sky-soft) 0%, #f3e9f5 48%, var(--blush-soft) 100%);
+    position: relative;
+    overflow-x: hidden;
+    display:flex;
+    justify-content:center;
+    padding: 48px 20px 80px;
+  }
+
+  .blob{
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.55;
+    z-index: 0;
+    pointer-events: none;
+    animation: drift 22s ease-in-out infinite;
+  }
+  .blob.b1{ width: 340px; height: 340px; background: var(--sky); top: -120px; left: -100px; animation-delay: 0s; }
+  .blob.b2{ width: 300px; height: 300px; background: var(--blush); bottom: -100px; right: -80px; animation-delay: -8s; }
+  .blob.b3{ width: 220px; height: 220px; background: var(--lilac); top: 40%; right: 10%; animation-delay: -15s; }
+
+  @keyframes drift{
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(30px, -20px) scale(1.06); }
+    66% { transform: translate(-20px, 25px) scale(0.96); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .blob{ animation: none; }
+  }
+
+  .wrap{
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 460px;
+  }
+
+  .top-nav{
+    display:flex;
+    gap: 6px;
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 18px;
+    padding: 6px;
+    margin-bottom: 24px;
+  }
+
+  .top-nav a{
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    padding: 10px 6px;
+    border-radius: 13px;
+    transition: all 0.2s ease;
+  }
+
+  .top-nav a.active{
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    color: #47425a;
+    box-shadow: 0 4px 12px rgba(214,160,190,0.3);
+  }
+
+  header.hero{
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .hero .mark{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width: 56px;
+    height: 56px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    box-shadow: var(--shadow);
+    font-size: 26px;
+    margin-bottom: 14px;
+  }
+
+  h1{
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 28px;
+    margin: 0 0 6px;
+    letter-spacing: 0.2px;
+  }
+
+  .hero p{
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+
+  .card{
+    background: var(--glass);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border: 1px solid var(--glass-border);
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+
+  .today-total{
+    text-align: center;
+    margin-bottom: 18px;
+  }
+
+  .today-total .amount{
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 44px;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .today-total .amount span{
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-left: 4px;
+  }
+
+  .today-total .goal-label{
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  .progress-track{
+    width: 100%;
+    height: 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.8);
+    overflow: hidden;
+    margin-top: 14px;
+  }
+
+  .progress-fill{
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    transition: width 0.4s ease;
+  }
+
+  .quick-add{
+    display:flex;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  .quick-btn{
+    flex: 1;
+    border: none;
+    background: var(--glass-strong);
+    border: 1.5px solid rgba(255,255,255,0.8);
+    border-radius: 18px;
+    padding: 16px 8px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .quick-btn:hover{ transform: translateY(-1px); box-shadow: 0 8px 18px rgba(214,160,190,0.25); }
+  .quick-btn:active{ transform: translateY(0); }
+  .quick-btn:disabled{ opacity: 0.6; cursor: default; transform: none; }
+
+  .quick-btn .emoji{ display:block; font-size: 20px; margin-bottom: 4px; }
+
+  .custom-row{
+    display: none;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .custom-row.open{ display:flex; }
+
+  input#customAmount{
+    flex: 1;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--ink);
+    background: var(--glass-strong);
+    border: 1.5px solid rgba(255,255,255,0.8);
+    border-radius: 16px;
+    padding: 12px;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  input#customAmount::-webkit-outer-spin-button,
+  input#customAmount::-webkit-inner-spin-button{
+    -webkit-appearance: none; margin:0;
+  }
+  input#customAmount:focus{
+    border-color: var(--sky);
+    box-shadow: 0 0 0 4px rgba(191,227,242,0.45);
+  }
+
+  button#customLogBtn{
+    border: none;
+    padding: 0 20px;
+    border-radius: 16px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: #47425a;
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    cursor: pointer;
+  }
+
+  .status-msg{
+    margin-top: 14px;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 600;
+    min-height: 18px;
+  }
+  .status-msg.success{ color: #5b9c7e; }
+  .status-msg.error{ color: #c97b7b; }
+
+  .section-title{
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    margin: 0 0 14px;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+
+  .recent-list{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .entry{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    background: rgba(255,255,255,0.45);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 18px;
+    padding: 14px 16px;
+  }
+
+  .entry .drop{ font-size: 20px; flex-shrink: 0; }
+
+  .entry .meta{ flex: 1; min-width: 0; }
+
+  .entry .amount-label{
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .timestamp{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding: 24px 10px;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+  .empty-state .emoji{ font-size: 28px; display:block; margin-bottom: 8px; }
+
+  .config-warning{
+    background: rgba(255,255,255,0.6);
+    border: 1px dashed rgba(200,150,170,0.5);
+    border-radius: 16px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+  }
+  .config-warning code{
+    background: rgba(255,255,255,0.7);
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+
+  footer{
+    text-align:center;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+
+<div class="wrap">
+  <nav class="top-nav">
+    <a href="#">🩸 Blood Sugar</a>
+    <a href="#">🫀 Blood Pressure</a>
+    <a href="#">🌸 Period</a>
+    <a href="#" class="active">💧 Hydration</a>
+  </nav>
+
+  <header class="hero">
+    <div class="mark">💧</div>
+    <h1>Sip Tracker</h1>
+    <p>A gentle place to log how you're doing today</p>
+  </header>
+
+  <div id="configWarning" class="config-warning" style="display:none;">
+    Connect your Notion backend: set <code>WORKER_URL</code> near the top of the script to your Cloudflare Worker address.
+  </div>
+
+  <section class="card">
+    <div class="today-total">
+      <div class="amount" id="todayAmount">0<span>oz today</span></div>
+      <div class="goal-label" id="goalLabel">of 128oz goal</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%;"></div></div>
+    </div>
+
+    <div class="quick-add">
+      <button class="quick-btn" id="add16Btn"><span class="emoji">💧</span>+16 oz</button>
+      <button class="quick-btn" id="add32Btn"><span class="emoji">💦</span>+32 oz</button>
+      <button class="quick-btn" id="customBtn"><span class="emoji">✏️</span>Custom</button>
+    </div>
+
+    <div class="custom-row" id="customRow">
+      <input type="number" id="customAmount" placeholder="oz" inputmode="numeric" min="1">
+      <button id="customLogBtn">Log</button>
+    </div>
+
+    <div id="statusMsg" class="status-msg"></div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">🕊️ Recent sips</h2>
+    <div id="recentList" class="recent-list">
+      <div class="empty-state">
+        <span class="emoji">🌤️</span>
+        Loading your recent sips…
+      </div>
+    </div>
+  </section>
+
+  <footer>Goal is a gentle guide, not a rule</footer>
+</div>
+
+<script>
+/* ====================== CONFIG ====================== */
+// Set this to your Cloudflare Worker URL, e.g. "https://hydration-tracker.yourname.workers.dev"
+const WORKER_URL = "https://waters.crysthigpen.workers.dev";
+// Daily goal shown as the progress reference — adjust to taste
+const DAILY_GOAL_OZ = 128;
+/* ====================================================== */
+
+const add16Btn = document.getElementById('add16Btn');
+const add32Btn = document.getElementById('add32Btn');
+const customBtn = document.getElementById('customBtn');
+const customRow = document.getElementById('customRow');
+const customAmount = document.getElementById('customAmount');
+const customLogBtn = document.getElementById('customLogBtn');
+const statusMsg = document.getElementById('statusMsg');
+const recentList = document.getElementById('recentList');
+const configWarning = document.getElementById('configWarning');
+const todayAmount = document.getElementById('todayAmount');
+const goalLabel = document.getElementById('goalLabel');
+const progressFill = document.getElementById('progressFill');
+
+if (!WORKER_URL) {
+  configWarning.style.display = 'block';
+}
+
+goalLabel.textContent = `of ${DAILY_GOAL_OZ} oz goal`;
+
+customBtn.addEventListener('click', () => {
+  customRow.classList.toggle('open');
+  if (customRow.classList.contains('open')) customAmount.focus();
+});
+
+function isToday(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear() &&
+         d.getMonth() === now.getMonth() &&
+         d.getDate() === now.getDate();
+}
+
+function formatTime(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  const diffMs = now - d;
+  const diffMins = Math.round(diffMs / 60000);
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins} min ago`;
+  const diffHrs = Math.round(diffMins / 60);
+  if (diffHrs < 24) return `${diffHrs} hr${diffHrs > 1 ? 's' : ''} ago`;
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' · ' +
+         d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+function renderTodayTotal(entries) {
+  const total = (entries || [])
+    .filter(e => isToday(e.loggedAt))
+    .reduce((sum, e) => sum + (e.amount || 0), 0);
+
+  todayAmount.innerHTML = `${total}<span>oz today</span>`;
+  const pct = Math.min(100, Math.round((total / DAILY_GOAL_OZ) * 100));
+  progressFill.style.width = `${pct}%`;
+}
+
+function renderEntries(entries) {
+  if (!entries || entries.length === 0) {
+    recentList.innerHTML = `
+      <div class="empty-state">
+        <span class="emoji">🌤️</span>
+        No sips yet — your first one will show up here.
+      </div>`;
+    return;
+  }
+
+  recentList.innerHTML = entries.slice(0, 5).map(e => `
+    <div class="entry">
+      <span class="drop">💧</span>
+      <div class="meta">
+        <div class="amount-label">${e.amount} oz</div>
+        <div class="timestamp">${formatTime(e.loggedAt)}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function loadEntries() {
+  if (!WORKER_URL) {
+    renderTodayTotal([]);
+    renderEntries([]);
+    return;
+  }
+  try {
+    const res = await fetch(`${WORKER_URL}/entries?limit=50`);
+    if (!res.ok) throw new Error('Request failed');
+    const data = await res.json();
+    const entries = data.entries || [];
+    renderTodayTotal(entries);
+    renderEntries(entries);
+  } catch (err) {
+    recentList.innerHTML = `
+      <div class="empty-state">
+        <span class="emoji">🌥️</span>
+        Couldn't load recent sips. Check your connection and try again.
+      </div>`;
+  }
+}
+
+async function logAmount(amount) {
+  if (!amount || amount <= 0) {
+    statusMsg.textContent = 'Enter an amount first.';
+    statusMsg.className = 'status-msg error';
+    return;
+  }
+  if (!WORKER_URL) {
+    statusMsg.textContent = 'Set WORKER_URL in the script before logging sips.';
+    statusMsg.className = 'status-msg error';
+    return;
+  }
+
+  [add16Btn, add32Btn, customLogBtn].forEach(b => b.disabled = true);
+  statusMsg.textContent = '';
+  statusMsg.className = 'status-msg';
+
+  try {
+    const res = await fetch(`${WORKER_URL}/entries`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount,
+        loggedAt: new Date().toISOString()
+      })
+    });
+    if (!res.ok) throw new Error('Request failed');
+
+    statusMsg.textContent = 'Logged! Stay glowing. 💧';
+    statusMsg.className = 'status-msg success';
+    customAmount.value = '';
+    customRow.classList.remove('open');
+    await loadEntries();
+  } catch (err) {
+    statusMsg.textContent = "Something didn't save — please try again.";
+    statusMsg.className = 'status-msg error';
+  } finally {
+    [add16Btn, add32Btn, customLogBtn].forEach(b => b.disabled = false);
+  }
+}
+
+add16Btn.addEventListener('click', () => logAmount(16));
+add32Btn.addEventListener('click', () => logAmount(32));
+customLogBtn.addEventListener('click', () => logAmount(parseFloat(customAmount.value)));
+customAmount.addEventListener('keydown', (e) => { if (e.key === 'Enter') logAmount(parseFloat(customAmount.value)); });
+
+loadEntries();
+</script>
+
+</body>
+</html>
