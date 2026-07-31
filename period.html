@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glow · Period Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky: #bfe3f2;
+    --sky-soft: #eaf6fb;
+    --blush: #f7cfe0;
+    --blush-soft: #fdeaf1;
+    --lilac: #e3d2ee;
+    --ink: #3d4256;
+    --ink-soft: #7c8092;
+    --glass: rgba(255,255,255,0.55);
+    --glass-strong: rgba(255,255,255,0.72);
+    --glass-border: rgba(255,255,255,0.65);
+    --shadow: 0 20px 60px rgba(133,164,197,0.25), 0 4px 16px rgba(214,160,190,0.15);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    min-height: 100vh;
+    font-family: 'Quicksand', sans-serif;
+    color: var(--ink);
+  }
+
+  body{
+    background: linear-gradient(160deg, var(--sky-soft) 0%, #f3e9f5 48%, var(--blush-soft) 100%);
+    position: relative;
+    overflow-x: hidden;
+    display:flex;
+    justify-content:center;
+    padding: 48px 20px 80px;
+  }
+
+  .blob{
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.55;
+    z-index: 0;
+    pointer-events: none;
+    animation: drift 22s ease-in-out infinite;
+  }
+  .blob.b1{ width: 340px; height: 340px; background: var(--sky); top: -120px; left: -100px; animation-delay: 0s; }
+  .blob.b2{ width: 300px; height: 300px; background: var(--blush); bottom: -100px; right: -80px; animation-delay: -8s; }
+  .blob.b3{ width: 220px; height: 220px; background: var(--lilac); top: 40%; right: 10%; animation-delay: -15s; }
+
+  @keyframes drift{
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(30px, -20px) scale(1.06); }
+    66% { transform: translate(-20px, 25px) scale(0.96); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .blob{ animation: none; }
+  }
+
+  .wrap{
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 460px;
+  }
+
+  header.hero{
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .hero .mark{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width: 56px;
+    height: 56px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    box-shadow: var(--shadow);
+    font-size: 26px;
+    margin-bottom: 14px;
+  }
+
+  h1{
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 28px;
+    margin: 0 0 6px;
+    letter-spacing: 0.2px;
+  }
+
+  .hero p{
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+
+  .card{
+    background: var(--glass);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border: 1px solid var(--glass-border);
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+
+  label.field-label{
+    display:block;
+    font-family:'Fredoka', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .toggle-group{ margin-bottom: 20px; }
+
+  .segmented{
+    display:flex;
+    gap: 8px;
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 16px;
+    padding: 6px;
+  }
+
+  .segmented button{
+    flex:1;
+    border:none;
+    background: transparent;
+    padding: 11px 10px;
+    border-radius: 12px;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .segmented button.active{
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    color: #47425a;
+    box-shadow: 0 4px 12px rgba(214,160,190,0.3);
+  }
+
+  .chip-group{
+    display:flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .chip{
+    border: 1px solid rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.4);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .chip.active{
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    color: #47425a;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(214,160,190,0.3);
+  }
+
+  button#submitBtn{
+    width: 100%;
+    border: none;
+    padding: 16px;
+    border-radius: 18px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: #47425a;
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    box-shadow: 0 10px 24px rgba(214,160,190,0.35);
+    cursor: pointer;
+    margin-top: 4px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  button#submitBtn:hover{ transform: translateY(-1px); box-shadow: 0 14px 28px rgba(214,160,190,0.45); }
+  button#submitBtn:active{ transform: translateY(0); }
+  button#submitBtn:disabled{ opacity: 0.6; cursor: default; transform: none; }
+
+  .status-msg{
+    margin-top: 14px;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 600;
+    min-height: 18px;
+  }
+  .status-msg.success{ color: #5b9c7e; }
+  .status-msg.error{ color: #c97b7b; }
+
+  .section-title{
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    margin: 0 0 14px;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+
+  .recent-list{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .entry{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    background: rgba(255,255,255,0.45);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 18px;
+    padding: 14px 16px;
+  }
+
+  .entry .flow-dot{
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .flow-dot.Light{ background: var(--sky); }
+  .flow-dot.Medium{ background: #e3a9c4; }
+  .flow-dot.Heavy{ background: #d97b95; }
+
+  .entry .meta{ flex: 1; min-width: 0; }
+
+  .entry .flow-label{
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .entry .tags{
+    display:flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .pill{
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.7);
+    color: var(--ink-soft);
+  }
+  .pill.mood-Good{ color: #4d8a6c; }
+  .pill.mood-Cranky{ color: #a97a2e; }
+  .pill.mood-Sad{ color: #6b87b3; }
+
+  .timestamp{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding: 24px 10px;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+  .empty-state .emoji{ font-size: 28px; display:block; margin-bottom: 8px; }
+
+  .config-warning{
+    background: rgba(255,255,255,0.6);
+    border: 1px dashed rgba(200,150,170,0.5);
+    border-radius: 16px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+  }
+  .config-warning code{
+    background: rgba(255,255,255,0.7);
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+
+  footer{
+    text-align:center;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="mark">🌸</div>
+    <h1>Bloom Tracker</h1>
+    <p>A gentle place to log how you're doing today</p>
+  </header>
+
+  <div id="configWarning" class="config-warning" style="display:none;">
+    Connect your Notion backend: set <code>WORKER_URL</code> near the top of the script to your Cloudflare Worker address.
+  </div>
+
+  <section class="card">
+    <div class="toggle-group">
+      <label class="field-label">Flow level</label>
+      <div class="segmented" id="flowSegment">
+        <button type="button" class="active" data-value="Light">Light</button>
+        <button type="button" data-value="Medium">Medium</button>
+        <button type="button" data-value="Heavy">Heavy</button>
+      </div>
+    </div>
+
+    <div class="toggle-group">
+      <label class="field-label">Symptoms</label>
+      <div class="chip-group" id="symptomChips">
+        <button type="button" class="chip" data-value="Headache">Headache</button>
+        <button type="button" class="chip" data-value="Cramps">Cramps</button>
+        <button type="button" class="chip" data-value="Fatigue">Fatigue</button>
+      </div>
+    </div>
+
+    <div class="toggle-group" style="margin-bottom: 4px;">
+      <label class="field-label">Mood</label>
+      <div class="segmented" id="moodSegment">
+        <button type="button" class="active" data-value="Good">Good</button>
+        <button type="button" data-value="Cranky">Cranky</button>
+        <button type="button" data-value="Sad">Sad</button>
+      </div>
+    </div>
+
+    <button id="submitBtn">Log entry</button>
+    <div id="statusMsg" class="status-msg"></div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">🕊️ Recent entries</h2>
+    <div id="recentList" class="recent-list">
+      <div class="empty-state">
+        <span class="emoji">🌤️</span>
+        Loading your recent entries…
+      </div>
+    </div>
+  </section>
+
+  <footer>Logged privately to your own Notion workspace</footer>
+</div>
+
+<script>
+/* ====================== CONFIG ====================== */
+// Set this to your Cloudflare Worker URL, e.g. "https://bloom-tracker.yourname.workers.dev"
+const WORKER_URL = "https://cperiod.crysthigpen.workers.dev";
+/* ====================================================== */
+
+const flowSegment = document.getElementById('flowSegment');
+const symptomChips = document.getElementById('symptomChips');
+const moodSegment = document.getElementById('moodSegment');
+const submitBtn = document.getElementById('submitBtn');
+const statusMsg = document.getElementById('statusMsg');
+const recentList = document.getElementById('recentList');
+const configWarning = document.getElementById('configWarning');
+
+let flow = 'Light';
+let symptoms = [];
+let mood = 'Good';
+
+if (!WORKER_URL) {
+  configWarning.style.display = 'block';
+}
+
+flowSegment.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    flowSegment.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    flow = btn.dataset.value;
+  });
+});
+
+symptomChips.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    chip.classList.toggle('active');
+    const value = chip.dataset.value;
+    if (chip.classList.contains('active')) {
+      if (!symptoms.includes(value)) symptoms.push(value);
+    } else {
+      symptoms = symptoms.filter(s => s !== value);
+    }
+  });
+});
+
+moodSegment.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    moodSegment.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mood = btn.dataset.value;
+  });
+});
+
+function formatTime(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  const diffMs = now - d;
+  const diffMins = Math.round(diffMs / 60000);
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins} min ago`;
+  const diffHrs = Math.round(diffMins / 60);
+  if (diffHrs < 24) return `${diffHrs} hr${diffHrs > 1 ? 's' : ''} ago`;
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' · ' +
+         d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+function renderEntries(entries) {
+  if (!entries || entries.length === 0) {
+    recentList.innerHTML = `
+      <div class="empty-state">
+        <span class="emoji">🌤️</span>
+        No entries yet — your first one will show up here.
+      </div>`;
+    return;
+  }
+
+  recentList.innerHTML = entries.slice(0, 5).map(e => {
+    const symptomPills = (e.symptoms || []).map(s => `<span class="pill">${s}</span>`).join('');
+    return `
+      <div class="entry">
+        <span class="flow-dot ${e.flow}"></span>
+        <div class="meta">
+          <div class="flow-label">${e.flow} flow</div>
+          <div class="tags">
+            <span class="pill mood-${e.mood}">${e.mood}</span>
+            ${symptomPills}
+          </div>
+          <div class="timestamp">${formatTime(e.loggedAt)}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function loadEntries() {
+  if (!WORKER_URL) {
+    renderEntries([]);
+    return;
+  }
+  try {
+    const res = await fetch(`${WORKER_URL}/entries?limit=5`);
+    if (!res.ok) throw new Error('Request failed');
+    const data = await res.json();
+    renderEntries(data.entries || []);
+  } catch (err) {
+    recentList.innerHTML = `
+      <div class="empty-state">
+        <span class="emoji">🌥️</span>
+        Couldn't load recent entries. Check your connection and try again.
+      </div>`;
+  }
+}
+
+async function submitEntry() {
+  if (!WORKER_URL) {
+    statusMsg.textContent = 'Set WORKER_URL in the script before logging entries.';
+    statusMsg.className = 'status-msg error';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  statusMsg.textContent = '';
+  statusMsg.className = 'status-msg';
+
+  try {
+    const res = await fetch(`${WORKER_URL}/entries`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        flow,
+        symptoms,
+        mood,
+        loggedAt: new Date().toISOString()
+      })
+    });
+    if (!res.ok) throw new Error('Request failed');
+
+    statusMsg.textContent = 'Logged! Nicely done. 🌸';
+    statusMsg.className = 'status-msg success';
+
+    symptomChips.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    symptoms = [];
+
+    await loadEntries();
+  } catch (err) {
+    statusMsg.textContent = "Something didn't save — please try again.";
+    statusMsg.className = 'status-msg error';
+  } finally {
+    submitBtn.disabled = false;
+  }
+}
+
+submitBtn.addEventListener('click', submitEntry);
+
+loadEntries();
+</script>
+
+</body>
+</html>
