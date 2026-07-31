@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glow · Blood Sugar Tracker</title>
+<title>Glow · Health Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -22,6 +22,8 @@
     --low-bg: rgba(237,166,157,0.18);
     --high: #eec27a;
     --high-bg: rgba(238,194,122,0.20);
+    --crisis-bg: rgba(224,133,124,0.22);
+    --elevated-bg: rgba(232,209,127,0.22);
     --ok: #a3d4bd;
     --ok-bg: rgba(163,212,189,0.20);
     --shadow: 0 20px 60px rgba(133,164,197,0.25), 0 4px 16px rgba(214,160,190,0.15);
@@ -35,36 +37,7 @@
     font-family: 'Quicksand', sans-serif;
     color: var(--ink);
   }
-.top-nav{
-    display:flex;
-    gap: 6px;
-    background: rgba(255,255,255,0.4);
-    border: 1px solid rgba(255,255,255,0.7);
-    border-radius: 18px;
-    padding: 6px;
-    margin-bottom: 24px;
-  }
 
-  .top-nav a{
-    flex: 1;
-    text-align: center;
-    text-decoration: none;
-    font-family: 'Quicksand', sans-serif;
-    font-weight: 600;
-    font-size: 13.5px;
-    color: var(--ink-soft);
-    padding: 10px 8px;
-    border-radius: 13px;
-    transition: all 0.2s ease;
-  }
-
-  .top-nav a.active{
-    background: linear-gradient(135deg, var(--sky), var(--blush));
-    color: #47425a;
-    box-shadow: 0 4px 12px rgba(214,160,190,0.3);
-  }
-
-  
   body{
     background: linear-gradient(160deg, var(--sky-soft) 0%, #f3e9f5 48%, var(--blush-soft) 100%);
     position: relative;
@@ -74,7 +47,6 @@
     padding: 48px 20px 80px;
   }
 
-  /* ambient floating blobs */
   .blob{
     position: fixed;
     border-radius: 50%;
@@ -102,7 +74,36 @@
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 460px;
+    max-width: 620px;
+  }
+
+  .top-nav{
+    display:flex;
+    gap: 6px;
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 18px;
+    padding: 6px;
+    margin-bottom: 24px;
+  }
+
+  .top-nav a{
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    padding: 10px 6px;
+    border-radius: 13px;
+    transition: all 0.2s ease;
+  }
+
+  .top-nav a.active{
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    color: #47425a;
+    box-shadow: 0 4px 12px rgba(214,160,190,0.3);
   }
 
   header.hero{
@@ -137,261 +138,117 @@
     font-size: 15px;
   }
 
-  .card{
+  .hub-grid{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  @media (min-width: 560px){
+    .hub-grid{ grid-template-columns: 1fr 1fr; }
+  }
+
+  .hub-card{
+    display: block;
     background: var(--glass);
     backdrop-filter: blur(22px);
     -webkit-backdrop-filter: blur(22px);
     border: 1px solid var(--glass-border);
-    border-radius: 28px;
-    padding: 28px;
+    border-radius: 26px;
+    padding: 24px;
     box-shadow: var(--shadow);
-    margin-bottom: 20px;
-  }
-
-  label.field-label{
-    display:block;
-    font-family:'Fredoka', sans-serif;
-    font-weight: 500;
-    font-size: 14px;
+    text-decoration: none;
     color: var(--ink);
-    margin-bottom: 8px;
-  }
-
-  .bs-input-row{
-    position: relative;
-    margin-bottom: 22px;
-  }
-
-  input#bsValue{
-    width: 100%;
-    font-family: 'Fredoka', sans-serif;
-    font-size: 42px;
-    font-weight: 600;
-    text-align: center;
-    color: var(--ink);
-    background: var(--glass-strong);
-    border: 1.5px solid rgba(255,255,255,0.8);
-    border-radius: 20px;
-    padding: 18px 70px 18px 20px;
-    outline: none;
-    transition: box-shadow 0.2s ease, border-color 0.2s ease;
-    -moz-appearance: textfield;
-  }
-  input#bsValue::-webkit-outer-spin-button,
-  input#bsValue::-webkit-inner-spin-button{
-    -webkit-appearance: none; margin:0;
-  }
-  input#bsValue:focus{
-    border-color: var(--sky);
-    box-shadow: 0 0 0 4px rgba(191,227,242,0.45);
-  }
-  input#bsValue::placeholder{
-    color: #c3c8d6;
-    font-weight: 500;
-  }
-
-  .unit{
-    position: absolute;
-    right: 22px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 14px;
-    color: var(--ink-soft);
-    font-weight: 600;
-  }
-
-  .toggle-group{
-    margin-bottom: 20px;
-  }
-
-  .segmented{
-    display:flex;
-    gap: 8px;
-    background: rgba(255,255,255,0.4);
-    border: 1px solid rgba(255,255,255,0.7);
-    border-radius: 16px;
-    padding: 6px;
-  }
-
-  .segmented button{
-    flex:1;
-    border:none;
-    background: transparent;
-    padding: 11px 10px;
-    border-radius: 12px;
-    font-family: 'Quicksand', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--ink-soft);
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .segmented button.active{
-    background: linear-gradient(135deg, var(--sky), var(--blush));
-    color: #47425a;
-    box-shadow: 0 4px 12px rgba(214,160,190,0.3);
-  }
-
-  .switch-row{
-    display:flex;
-    align-items:center;
-    justify-content: space-between;
-    background: rgba(255,255,255,0.4);
-    border: 1px solid rgba(255,255,255,0.7);
-    border-radius: 16px;
-    padding: 12px 16px;
-  }
-
-  .switch-row .switch-label{
-    font-family:'Fredoka', sans-serif;
-    font-weight: 500;
-    font-size: 14px;
-  }
-  .switch-row .switch-sub{
-    display:block;
-    font-family:'Quicksand', sans-serif;
-    font-weight: 500;
-    font-size: 12px;
-    color: var(--ink-soft);
-    margin-top: 2px;
-  }
-
-  .switch{
-    position: relative;
-    width: 50px;
-    height: 28px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.9);
-    border: 1px solid rgba(255,255,255,0.9);
-    cursor: pointer;
-    flex-shrink:0;
-    transition: background 0.25s ease;
-  }
-  .switch.on{
-    background: linear-gradient(135deg, var(--sky), var(--blush));
-  }
-  .switch .knob{
-    position:absolute;
-    top: 3px; left: 3px;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: white;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    transition: transform 0.25s ease;
-  }
-  .switch.on .knob{ transform: translateX(22px); }
-
-  button#submitBtn{
-    width: 100%;
-    border: none;
-    padding: 16px;
-    border-radius: 18px;
-    font-family: 'Fredoka', sans-serif;
-    font-weight: 600;
-    font-size: 16px;
-    color: #47425a;
-    background: linear-gradient(135deg, var(--sky), var(--blush));
-    box-shadow: 0 10px 24px rgba(214,160,190,0.35);
-    cursor: pointer;
-    margin-top: 22px;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
-  button#submitBtn:hover{ transform: translateY(-1px); box-shadow: 0 14px 28px rgba(214,160,190,0.45); }
-  button#submitBtn:active{ transform: translateY(0); }
-  button#submitBtn:disabled{ opacity: 0.6; cursor: default; transform: none; }
 
-  .status-msg{
-    margin-top: 14px;
-    text-align: center;
-    font-size: 13.5px;
-    font-weight: 600;
-    min-height: 18px;
+  .hub-card:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 24px 64px rgba(133,164,197,0.3), 0 6px 18px rgba(214,160,190,0.2);
   }
-  .status-msg.success{ color: #5b9c7e; }
-  .status-msg.error{ color: #c97b7b; }
 
-  .section-title{
+  .hub-card-header{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .hub-icon{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width: 38px;
+    height: 38px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .hub-title{
     font-family: 'Fredoka', sans-serif;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 16px;
-    margin: 0 0 14px;
+  }
+
+  .hub-stat{
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+
+  .hub-stat .unit{
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-left: 4px;
+  }
+
+  .hub-sub{
+    font-size: 13px;
+    color: var(--ink-soft);
     display:flex;
     align-items:center;
     gap: 8px;
-  }
-
-  .recent-list{
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .entry{
-    display:flex;
-    align-items:center;
-    gap: 14px;
-    background: rgba(255,255,255,0.45);
-    border: 1px solid rgba(255,255,255,0.7);
-    border-radius: 18px;
-    padding: 14px 16px;
-  }
-
-  .entry .value{
-    font-family: 'Fredoka', sans-serif;
-    font-weight: 600;
-    font-size: 22px;
-    width: 62px;
-    text-align:center;
-    flex-shrink:0;
-  }
-
-  .entry .meta{
-    flex: 1;
-    min-width: 0;
-  }
-
-  .entry .tags{
-    display:flex;
-    gap: 6px;
     flex-wrap: wrap;
-    margin-top: 4px;
   }
 
-  .pill{
-    font-size: 11.5px;
-    font-weight: 600;
+  .hub-badge{
+    font-size: 11px;
+    font-weight: 700;
     padding: 3px 10px;
     border-radius: 999px;
-    background: rgba(255,255,255,0.7);
-    color: var(--ink-soft);
-  }
-
-  .badge{
-    font-size: 12px;
-    font-weight: 700;
-    padding: 5px 12px;
-    border-radius: 999px;
-    flex-shrink: 0;
     white-space: nowrap;
   }
-  .badge.low{ background: var(--low-bg); color: #b9695f; }
-  .badge.high{ background: var(--high-bg); color: #a97a2e; }
-  .badge.ok{ background: var(--ok-bg); color: #4d8a6c; }
+  .hub-badge.low{ background: var(--low-bg); color: #b9695f; }
+  .hub-badge.high{ background: var(--high-bg); color: #a97a2e; }
+  .hub-badge.elevated{ background: var(--elevated-bg); color: #91792f; }
+  .hub-badge.crisis{ background: var(--crisis-bg); color: #a5453a; }
+  .hub-badge.ok{ background: var(--ok-bg); color: #4d8a6c; }
 
-  .timestamp{
-    font-size: 12px;
-    color: var(--ink-soft);
-    margin-top: 2px;
+  .hub-progress-track{
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.8);
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .hub-progress-fill{
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    transition: width 0.4s ease;
   }
 
-  .empty-state{
-    text-align:center;
-    padding: 24px 10px;
+  .hub-empty{
     color: var(--ink-soft);
-    font-size: 14px;
+    font-size: 13px;
   }
-  .empty-state .emoji{ font-size: 28px; display:block; margin-bottom: 8px; }
 
   .config-warning{
     background: rgba(255,255,255,0.6);
@@ -413,7 +270,7 @@
     text-align:center;
     font-size: 12px;
     color: var(--ink-soft);
-    margin-top: 8px;
+    margin-top: 24px;
   }
 </style>
 </head>
@@ -422,235 +279,209 @@
 <div class="blob b1"></div>
 <div class="blob b2"></div>
 <div class="blob b3"></div>
-  
+
 <div class="wrap">
   <nav class="top-nav">
-    <a href="https://glowtracker.pages.dev/" class="active">🩸 Blood Sugar</a>
+    <a href="#" class="active">🏠 Home</a>
+    <a href="https://glowtracker.pages.dev/bgc">🩸 Blood Sugar</a>
     <a href="https://glowtracker.pages.dev/bp">🫀 Blood Pressure</a>
     <a href="https://glowtracker.pages.dev/period">🌸 Period</a>
-      <a href="https://glowtracker.pages.dev/water">💧 Hydration</a>
+    <a href="https://glowtracker.pages.dev/water">💧 Hydration</a>
   </nav>
 
-  
-<div class="wrap">
   <header class="hero">
-    <div class="mark">🩷</div>
-    <h1>Glow Tracker</h1>
-    <p>A gentle place to log how you're doing today</p>
+    <div class="mark">🌷</div>
+    <h1>Health Hub</h1>
+    <p>Everything in one gentle glance</p>
   </header>
 
   <div id="configWarning" class="config-warning" style="display:none;">
-    Connect your Notion backend: set <code>WORKER_URL</code> near the top of the script to your Cloudflare Worker address.
+    Set the four WORKER_URL constants near the top of the script to your Cloudflare Worker addresses.
   </div>
 
-  <section class="card">
-    <label class="field-label" for="bsValue">Blood sugar</label>
-    <div class="bs-input-row">
-      <input type="number" id="bsValue" placeholder="e.g. 110" inputmode="numeric" min="1">
-      <span class="unit">mg/dL</span>
-    </div>
-
-    <div class="toggle-group">
-      <div class="switch-row">
-        <div>
-          <span class="switch-label">Fasting</span>
-          <span class="switch-sub">No food for 8+ hours</span>
-        </div>
-        <div class="switch" id="fastingSwitch" role="switch" aria-checked="false"><div class="knob"></div></div>
+  <div class="hub-grid">
+    <a href="#" class="hub-card" id="sugarCard">
+      <div class="hub-card-header">
+        <span class="hub-icon">🩸</span>
+        <span class="hub-title">Blood Sugar</span>
       </div>
-    </div>
+      <div class="hub-stat" id="sugarStat">—</div>
+      <div class="hub-sub" id="sugarSub">Loading…</div>
+    </a>
 
-    <div class="toggle-group">
-      <label class="field-label">Timing</label>
-      <div class="segmented" id="timingSegment">
-        <button type="button" class="active" data-value="Before food">Before food</button>
-        <button type="button" data-value="After food">After food</button>
+    <a href="#" class="hub-card" id="pressureCard">
+      <div class="hub-card-header">
+        <span class="hub-icon">🫀</span>
+        <span class="hub-title">Blood Pressure</span>
       </div>
-    </div>
+      <div class="hub-stat" id="pressureStat">—</div>
+      <div class="hub-sub" id="pressureSub">Loading…</div>
+    </a>
 
-    <div class="toggle-group">
-      <label class="field-label">Source</label>
-      <div class="segmented" id="sourceSegment">
-        <button type="button" class="active" data-value="Dexcom">Dexcom</button>
-        <button type="button" data-value="Meter">Meter</button>
+    <a href="#" class="hub-card" id="periodCard">
+      <div class="hub-card-header">
+        <span class="hub-icon">🌸</span>
+        <span class="hub-title">Period</span>
       </div>
-    </div>
+      <div class="hub-stat" id="periodStat">—</div>
+      <div class="hub-sub" id="periodSub">Loading…</div>
+    </a>
 
-    <button id="submitBtn">Log reading</button>
-    <div id="statusMsg" class="status-msg"></div>
-  </section>
-
-  <section class="card">
-    <h2 class="section-title">🕊️ Recent readings</h2>
-    <div id="recentList" class="recent-list">
-      <div class="empty-state">
-        <span class="emoji">🌤️</span>
-        Loading your recent readings…
+    <a href="#" class="hub-card" id="hydrationCard">
+      <div class="hub-card-header">
+        <span class="hub-icon">💧</span>
+        <span class="hub-title">Hydration</span>
       </div>
-    </div>
-  </section>
+      <div class="hub-stat" id="hydrationStat">—</div>
+      <div class="hub-sub" id="hydrationSub">Loading…</div>
+      <div class="hub-progress-track"><div class="hub-progress-fill" id="hydrationFill" style="width:0%;"></div></div>
+    </a>
+  </div>
 
-  <footer>Low is under 80 · In range is 80–250 · High is above 250</footer>
+  <footer>Each card links straight into that tracker</footer>
 </div>
 
 <script>
 /* ====================== CONFIG ====================== */
-// Set this to your Cloudflare Worker URL, e.g. "https://glow-tracker.yourname.workers.dev"
-const WORKER_URL = "https://sbrewhealth.crysthigpen.workers.dev";
+// Point each of these at the matching Cloudflare Worker from that tracker
+const SUGAR_WORKER_URL = "https://sbrewhealth.crysthigpen.workers.dev";
+const PRESSURE_WORKER_URL = "https://cbloodpressure.crysthigpen.workers.dev";
+const PERIOD_WORKER_URL = "https://cbloodpressure.crysthigpen.workers.dev";
+const HYDRATION_WORKER_URL = "https://cbloodpressure.crysthigpen.workers.dev";
+
+// Point each card's link at wherever that tracker is actually deployed
+const SUGAR_URL = "https://glowtracker.pages.dev/bgc";
+const PRESSURE_URL = "https://glowtracker.pages.dev/bp";
+const PERIOD_URL = "https://glowtracker.pages.dev/period";
+const HYDRATION_URL = "https://glowtracker.pages.dev/water";
+
+const HYDRATION_GOAL_OZ = 128;
 /* ====================================================== */
 
-const bsValue = document.getElementById('bsValue');
-const fastingSwitch = document.getElementById('fastingSwitch');
-const timingSegment = document.getElementById('timingSegment');
-const sourceSegment = document.getElementById('sourceSegment');
-const submitBtn = document.getElementById('submitBtn');
-const statusMsg = document.getElementById('statusMsg');
-const recentList = document.getElementById('recentList');
-const configWarning = document.getElementById('configWarning');
+document.getElementById('sugarCard').href = SUGAR_URL;
+document.getElementById('pressureCard').href = PRESSURE_URL;
+document.getElementById('periodCard').href = PERIOD_URL;
+document.getElementById('hydrationCard').href = HYDRATION_URL;
 
-let fasting = false;
-let timing = 'Before food';
-let source = 'Dexcom';
-
-if (!WORKER_URL) {
-  configWarning.style.display = 'block';
-}
-
-fastingSwitch.addEventListener('click', () => {
-  fasting = !fasting;
-  fastingSwitch.classList.toggle('on', fasting);
-  fastingSwitch.setAttribute('aria-checked', String(fasting));
-});
-
-timingSegment.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    timingSegment.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    timing = btn.dataset.value;
-  });
-});
-
-sourceSegment.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    sourceSegment.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    source = btn.dataset.value;
-  });
-});
-
-function classify(value) {
-  if (value < 80) return { label: 'Low', cls: 'low' };
-  if (value > 250) return { label: 'High', cls: 'high' };
-  return { label: 'In range', cls: 'ok' };
+if (!SUGAR_WORKER_URL || !PRESSURE_WORKER_URL || !PERIOD_WORKER_URL || !HYDRATION_WORKER_URL) {
+  document.getElementById('configWarning').style.display = 'block';
 }
 
 function formatTime(iso) {
   const d = new Date(iso);
   const now = new Date();
-  const diffMs = now - d;
-  const diffMins = Math.round(diffMs / 60000);
+  const diffMins = Math.round((now - d) / 60000);
   if (diffMins < 1) return 'just now';
   if (diffMins < 60) return `${diffMins} min ago`;
   const diffHrs = Math.round(diffMins / 60);
   if (diffHrs < 24) return `${diffHrs} hr${diffHrs > 1 ? 's' : ''} ago`;
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' · ' +
-         d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-function renderEntries(entries) {
-  if (!entries || entries.length === 0) {
-    recentList.innerHTML = `
-      <div class="empty-state">
-        <span class="emoji">🌤️</span>
-        No readings yet — your first one will show up here.
-      </div>`;
-    return;
-  }
-
-  recentList.innerHTML = entries.slice(0, 4).map(e => {
-    const { label, cls } = classify(e.value);
-    return `
-      <div class="entry">
-        <div class="value">${e.value}</div>
-        <div class="meta">
-          <div class="tags">
-            <span class="pill">${e.fasting ? 'Fasting' : 'Not fasting'}</span>
-            <span class="pill">${e.timing}</span>
-            <span class="pill">${e.source || ''}</span>
-          </div>
-          <div class="timestamp">${formatTime(e.loggedAt)}</div>
-        </div>
-        <span class="badge ${cls}">${label}</span>
-      </div>`;
-  }).join('');
+function isToday(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear() &&
+         d.getMonth() === now.getMonth() &&
+         d.getDate() === now.getDate();
 }
 
-async function loadEntries() {
-  if (!WORKER_URL) {
-    renderEntries([]);
-    return;
-  }
+// ---- Blood Sugar ----
+function classifySugar(value) {
+  if (value < 80) return { label: 'Low', cls: 'low' };
+  if (value > 250) return { label: 'High', cls: 'high' };
+  return { label: 'In range', cls: 'ok' };
+}
+
+async function loadSugar() {
+  const stat = document.getElementById('sugarStat');
+  const sub = document.getElementById('sugarSub');
+  if (!SUGAR_WORKER_URL) { sub.innerHTML = '<span class="hub-empty">Not connected yet</span>'; return; }
   try {
-    const res = await fetch(`${WORKER_URL}/entries`);
-    if (!res.ok) throw new Error('Request failed');
+    const res = await fetch(`${SUGAR_WORKER_URL}/entries?limit=1`);
+    if (!res.ok) throw new Error('failed');
     const data = await res.json();
-    renderEntries(data.entries || []);
-  } catch (err) {
-    recentList.innerHTML = `
-      <div class="empty-state">
-        <span class="emoji">🌥️</span>
-        Couldn't load recent readings. Check your connection and try again.
-      </div>`;
+    const entry = (data.entries || [])[0];
+    if (!entry) { stat.textContent = '—'; sub.innerHTML = '<span class="hub-empty">No readings yet</span>'; return; }
+    const { label, cls } = classifySugar(entry.value);
+    stat.innerHTML = `${entry.value}<span class="unit">mg/dL</span>`;
+    sub.innerHTML = `<span class="hub-badge ${cls}">${label}</span> ${formatTime(entry.loggedAt)}`;
+  } catch {
+    sub.innerHTML = '<span class="hub-empty">Couldn\'t load</span>';
   }
 }
 
-async function submitEntry() {
-  const value = parseFloat(bsValue.value);
-  if (!value || value <= 0) {
-    statusMsg.textContent = 'Enter a blood sugar value first.';
-    statusMsg.className = 'status-msg error';
-    return;
-  }
-  if (!WORKER_URL) {
-    statusMsg.textContent = 'Set WORKER_URL in the script before logging readings.';
-    statusMsg.className = 'status-msg error';
-    return;
-  }
+// ---- Blood Pressure ----
+function classifyBP(systolic, diastolic) {
+  if (systolic > 180 || diastolic > 120) return { label: 'Crisis', cls: 'crisis' };
+  if (systolic < 90 || diastolic < 60) return { label: 'Low', cls: 'low' };
+  if (systolic >= 140 || diastolic >= 90) return { label: 'High', cls: 'high' };
+  if (systolic >= 130 || diastolic >= 80) return { label: 'High (Stage 1)', cls: 'high' };
+  if (systolic >= 120 && diastolic < 80) return { label: 'Elevated', cls: 'elevated' };
+  return { label: 'Normal', cls: 'ok' };
+}
 
-  submitBtn.disabled = true;
-  statusMsg.textContent = '';
-  statusMsg.className = 'status-msg';
-
+async function loadPressure() {
+  const stat = document.getElementById('pressureStat');
+  const sub = document.getElementById('pressureSub');
+  if (!PRESSURE_WORKER_URL) { sub.innerHTML = '<span class="hub-empty">Not connected yet</span>'; return; }
   try {
-    const res = await fetch(`${WORKER_URL}/entries`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        value,
-        fasting,
-        timing,
-        source,
-        loggedAt: new Date().toISOString()
-      })
-    });
-    if (!res.ok) throw new Error('Request failed');
-
-    statusMsg.textContent = 'Logged! Nicely done. 🌸';
-    statusMsg.className = 'status-msg success';
-    bsValue.value = '';
-    await loadEntries();
-  } catch (err) {
-    statusMsg.textContent = "Something didn't save — please try again.";
-    statusMsg.className = 'status-msg error';
-  } finally {
-    submitBtn.disabled = false;
+    const res = await fetch(`${PRESSURE_WORKER_URL}/entries?limit=1`);
+    if (!res.ok) throw new Error('failed');
+    const data = await res.json();
+    const entry = (data.entries || [])[0];
+    if (!entry) { stat.textContent = '—'; sub.innerHTML = '<span class="hub-empty">No readings yet</span>'; return; }
+    const { label, cls } = classifyBP(entry.systolic, entry.diastolic);
+    stat.innerHTML = `${entry.systolic}/${entry.diastolic}`;
+    sub.innerHTML = `<span class="hub-badge ${cls}">${label}</span> ${formatTime(entry.loggedAt)}`;
+  } catch {
+    sub.innerHTML = '<span class="hub-empty">Couldn\'t load</span>';
   }
 }
 
-submitBtn.addEventListener('click', submitEntry);
-bsValue.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitEntry(); });
+// ---- Period ----
+async function loadPeriod() {
+  const stat = document.getElementById('periodStat');
+  const sub = document.getElementById('periodSub');
+  if (!PERIOD_WORKER_URL) { sub.innerHTML = '<span class="hub-empty">Not connected yet</span>'; return; }
+  try {
+    const res = await fetch(`${PERIOD_WORKER_URL}/entries?limit=1`);
+    if (!res.ok) throw new Error('failed');
+    const data = await res.json();
+    const entry = (data.entries || [])[0];
+    if (!entry) { stat.textContent = '—'; sub.innerHTML = '<span class="hub-empty">No entries yet</span>'; return; }
+    stat.textContent = `${entry.flow} flow`;
+    const symptomText = (entry.symptoms || []).length ? entry.symptoms.join(', ') : 'No symptoms logged';
+    sub.innerHTML = `${entry.mood ? entry.mood + ' · ' : ''}${symptomText} · ${formatTime(entry.loggedAt)}`;
+  } catch {
+    sub.innerHTML = '<span class="hub-empty">Couldn\'t load</span>';
+  }
+}
 
-loadEntries();
+// ---- Hydration ----
+async function loadHydration() {
+  const stat = document.getElementById('hydrationStat');
+  const sub = document.getElementById('hydrationSub');
+  const fill = document.getElementById('hydrationFill');
+  if (!HYDRATION_WORKER_URL) { sub.innerHTML = '<span class="hub-empty">Not connected yet</span>'; return; }
+  try {
+    const res = await fetch(`${HYDRATION_WORKER_URL}/entries?limit=50`);
+    if (!res.ok) throw new Error('failed');
+    const data = await res.json();
+    const entries = data.entries || [];
+    const total = entries.filter(e => isToday(e.loggedAt)).reduce((sum, e) => sum + (e.amount || 0), 0);
+    stat.innerHTML = `${total}<span class="unit">oz today</span>`;
+    sub.textContent = `of ${HYDRATION_GOAL_OZ} oz goal`;
+    fill.style.width = `${Math.min(100, Math.round((total / HYDRATION_GOAL_OZ) * 100))}%`;
+  } catch {
+    sub.innerHTML = '<span class="hub-empty">Couldn\'t load</span>';
+  }
+}
+
+loadSugar();
+loadPressure();
+loadPeriod();
+loadHydration();
 </script>
 
 </body>
