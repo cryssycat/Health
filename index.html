@@ -6,6 +6,7 @@
 <title>Glow · Blood Sugar Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <style>
   :root{
     --sky: #bfe3f2;
@@ -74,6 +75,35 @@
     z-index: 1;
     width: 100%;
     max-width: 460px;
+  }
+
+  .top-nav{
+    display:flex;
+    gap: 6px;
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 18px;
+    padding: 6px;
+    margin-bottom: 24px;
+  }
+
+  .top-nav a{
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    padding: 10px 8px;
+    border-radius: 13px;
+    transition: all 0.2s ease;
+  }
+
+  .top-nav a.active{
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    color: #47425a;
+    box-shadow: 0 4px 12px rgba(214,160,190,0.3);
   }
 
   header.hero{
@@ -364,6 +394,12 @@
   }
   .empty-state .emoji{ font-size: 28px; display:block; margin-bottom: 8px; }
 
+  .chart-wrap{
+    position: relative;
+    width: 100%;
+    height: 180px;
+  }
+
   .config-warning{
     background: rgba(255,255,255,0.6);
     border: 1px dashed rgba(200,150,170,0.5);
@@ -395,6 +431,12 @@
 <div class="blob b3"></div>
 
 <div class="wrap">
+  <nav class="top-nav">
+    <a href="#" class="active">🩸 Blood Sugar</a>
+    <a href="#">🫀 Blood Pressure</a>
+    <a href="#">🌸 Period</a>
+  </nav>
+
   <header class="hero">
     <div class="mark">🩷</div>
     <h1>Glow Tracker</h1>
@@ -449,6 +491,17 @@
         <span class="emoji">🌤️</span>
         Loading your recent readings…
       </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">📈 Trend · last 10</h2>
+    <div class="chart-wrap">
+      <canvas id="trendChart" height="160"></canvas>
+    </div>
+    <div id="chartEmpty" class="empty-state" style="display:none;">
+      <span class="emoji">🌤️</span>
+      Not enough readings yet to chart a trend.
     </div>
   </section>
 
@@ -547,22 +600,113 @@ function renderEntries(entries) {
   }).join('');
 }
 
+let trendChart = null;
+const chartEmpty = document.getElementById('chartEmpty');
+
+function pointColorFor(value) {
+  const { cls } = classify(value);
+  if (cls === 'low') return '#e08476';
+  if (cls === 'high') return '#d9a13f';
+  return '#5b9c7e';
+}
+
+function renderChart(entries) {
+  const canvas = document.getElementById('trendChart');
+
+  if (!entries || entries.length === 0) {
+    canvas.style.display = 'none';
+    chartEmpty.style.display = 'block';
+    if (trendChart) { trendChart.destroy(); trendChart = null; }
+    return;
+  }
+
+  canvas.style.display = 'block';
+  chartEmpty.style.display = 'none';
+
+  // chronological order: oldest first, newest last
+  const ordered = [...entries].reverse();
+  const labels = ordered.map(e => {
+    const d = new Date(e.loggedAt);
+    return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  });
+  const values = ordered.map(e => e.value);
+  const pointColors = values.map(pointColorFor);
+
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 180);
+  gradient.addColorStop(0, 'rgba(191,227,242,0.45)');
+  gradient.addColorStop(1, 'rgba(247,207,224,0.05)');
+
+  if (trendChart) trendChart.destroy();
+
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderColor: '#9fc9de',
+        borderWidth: 2.5,
+        backgroundColor: gradient,
+        fill: true,
+        tension: 0.35,
+        pointBackgroundColor: pointColors,
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 1.5,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(61,66,86,0.9)',
+          titleFont: { family: 'Quicksand', weight: '600' },
+          bodyFont: { family: 'Quicksand' },
+          padding: 10,
+          cornerRadius: 10,
+          callbacks: {
+            label: (item) => `${item.parsed.y} mg/dL`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#7c8092', font: { family: 'Quicksand', size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 5 },
+        },
+        y: {
+          grid: { color: 'rgba(124,128,146,0.12)' },
+          ticks: { color: '#7c8092', font: { family: 'Quicksand', size: 11 } },
+        },
+      },
+    },
+  });
+}
+
 async function loadEntries() {
   if (!WORKER_URL) {
     renderEntries([]);
+    renderChart([]);
     return;
   }
   try {
-    const res = await fetch(`${WORKER_URL}/entries`);
+    const res = await fetch(`${WORKER_URL}/entries?limit=10`);
     if (!res.ok) throw new Error('Request failed');
     const data = await res.json();
-    renderEntries(data.entries || []);
+    const entries = data.entries || [];
+    renderEntries(entries);
+    renderChart(entries);
   } catch (err) {
     recentList.innerHTML = `
       <div class="empty-state">
         <span class="emoji">🌥️</span>
         Couldn't load recent readings. Check your connection and try again.
       </div>`;
+    renderChart([]);
   }
 }
 
