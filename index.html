@@ -35,7 +35,36 @@
     font-family: 'Quicksand', sans-serif;
     color: var(--ink);
   }
+.top-nav{
+    display:flex;
+    gap: 6px;
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 18px;
+    padding: 6px;
+    margin-bottom: 24px;
+  }
 
+  .top-nav a{
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    padding: 10px 8px;
+    border-radius: 13px;
+    transition: all 0.2s ease;
+  }
+
+  .top-nav a.active{
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    color: #47425a;
+    box-shadow: 0 4px 12px rgba(214,160,190,0.3);
+  }
+
+  
   body{
     background: linear-gradient(160deg, var(--sky-soft) 0%, #f3e9f5 48%, var(--blush-soft) 100%);
     position: relative;
