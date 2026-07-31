@@ -76,35 +76,6 @@
     max-width: 460px;
   }
 
-  .top-nav{
-    display:flex;
-    gap: 6px;
-    background: rgba(255,255,255,0.4);
-    border: 1px solid rgba(255,255,255,0.7);
-    border-radius: 18px;
-    padding: 6px;
-    margin-bottom: 24px;
-  }
-
-  .top-nav a{
-    flex: 1;
-    text-align: center;
-    text-decoration: none;
-    font-family: 'Quicksand', sans-serif;
-    font-weight: 600;
-    font-size: 13.5px;
-    color: var(--ink-soft);
-    padding: 10px 8px;
-    border-radius: 13px;
-    transition: all 0.2s ease;
-  }
-
-  .top-nav a.active{
-    background: linear-gradient(135deg, var(--sky), var(--blush));
-    color: #47425a;
-    box-shadow: 0 4px 12px rgba(214,160,190,0.3);
-  }
-
   header.hero{
     text-align: center;
     margin-bottom: 28px;
@@ -422,7 +393,7 @@
 <div class="blob b1"></div>
 <div class="blob b2"></div>
 <div class="blob b3"></div>
-
+  
 <div class="wrap">
   <nav class="top-nav">
     <a href="https://glowtracker.pages.dev/" class="active">🩸 Blood Sugar</a>
@@ -430,6 +401,8 @@
     <a href="https://glowtracker.pages.dev/period">🌸 Period</a>
   </nav>
 
+  
+<div class="wrap">
   <header class="hero">
     <div class="mark">🩷</div>
     <h1>Glow Tracker</h1>
@@ -493,7 +466,7 @@
 <script>
 /* ====================== CONFIG ====================== */
 // Set this to your Cloudflare Worker URL, e.g. "https://glow-tracker.yourname.workers.dev"
-const WORKER_URL = "";
+const WORKER_URL = "https://sbrewhealth.crysthigpen.workers.dev";
 /* ====================================================== */
 
 const bsValue = document.getElementById('bsValue');
@@ -588,7 +561,7 @@ async function loadEntries() {
     return;
   }
   try {
-    const res = await fetch(`${WORKER_URL}/entries?limit=4`);
+    const res = await fetch(`${WORKER_URL}/entries`);
     if (!res.ok) throw new Error('Request failed');
     const data = await res.json();
     renderEntries(data.entries || []);
