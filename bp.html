@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glow · Pressure Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --sky: #bfe3f2;
+    --sky-soft: #eaf6fb;
+    --blush: #f7cfe0;
+    --blush-soft: #fdeaf1;
+    --lilac: #e3d2ee;
+    --ink: #3d4256;
+    --ink-soft: #7c8092;
+    --glass: rgba(255,255,255,0.55);
+    --glass-strong: rgba(255,255,255,0.72);
+    --glass-border: rgba(255,255,255,0.65);
+    --low: #eda69d;
+    --low-bg: rgba(237,166,157,0.18);
+    --high: #eec27a;
+    --high-bg: rgba(238,194,122,0.20);
+    --crisis: #e0857c;
+    --crisis-bg: rgba(224,133,124,0.22);
+    --elevated: #e8d17f;
+    --elevated-bg: rgba(232,209,127,0.22);
+    --ok: #a3d4bd;
+    --ok-bg: rgba(163,212,189,0.20);
+    --shadow: 0 20px 60px rgba(133,164,197,0.25), 0 4px 16px rgba(214,160,190,0.15);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    min-height: 100vh;
+    font-family: 'Quicksand', sans-serif;
+    color: var(--ink);
+  }
+
+  body{
+    background: linear-gradient(160deg, var(--sky-soft) 0%, #f3e9f5 48%, var(--blush-soft) 100%);
+    position: relative;
+    overflow-x: hidden;
+    display:flex;
+    justify-content:center;
+    padding: 48px 20px 80px;
+  }
+
+  .blob{
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.55;
+    z-index: 0;
+    pointer-events: none;
+    animation: drift 22s ease-in-out infinite;
+  }
+  .blob.b1{ width: 340px; height: 340px; background: var(--sky); top: -120px; left: -100px; animation-delay: 0s; }
+  .blob.b2{ width: 300px; height: 300px; background: var(--blush); bottom: -100px; right: -80px; animation-delay: -8s; }
+  .blob.b3{ width: 220px; height: 220px; background: var(--lilac); top: 40%; right: 10%; animation-delay: -15s; }
+
+  @keyframes drift{
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(30px, -20px) scale(1.06); }
+    66% { transform: translate(-20px, 25px) scale(0.96); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .blob{ animation: none; }
+  }
+
+  .wrap{
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 460px;
+  }
+
+  header.hero{
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .hero .mark{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width: 56px;
+    height: 56px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    box-shadow: var(--shadow);
+    font-size: 26px;
+    margin-bottom: 14px;
+  }
+
+  h1{
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 28px;
+    margin: 0 0 6px;
+    letter-spacing: 0.2px;
+  }
+
+  .hero p{
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+
+  .card{
+    background: var(--glass);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border: 1px solid var(--glass-border);
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+
+  label.field-label{
+    display:block;
+    font-family:'Fredoka', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .bp-row{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .bp-field{
+    flex: 1;
+    position: relative;
+  }
+
+  .bp-field label{
+    display:block;
+    font-family:'Fredoka', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  input.bp-input{
+    width: 100%;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 34px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--ink);
+    background: var(--glass-strong);
+    border: 1.5px solid rgba(255,255,255,0.8);
+    border-radius: 20px;
+    padding: 16px 8px;
+    outline: none;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    -moz-appearance: textfield;
+  }
+  input.bp-input::-webkit-outer-spin-button,
+  input.bp-input::-webkit-inner-spin-button{
+    -webkit-appearance: none; margin:0;
+  }
+  input.bp-input:focus{
+    border-color: var(--sky);
+    box-shadow: 0 0 0 4px rgba(191,227,242,0.45);
+  }
+  input.bp-input::placeholder{
+    color: #c3c8d6;
+    font-weight: 500;
+  }
+
+  .bp-divider{
+    font-family: 'Fredoka', sans-serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    padding-top: 22px;
+  }
+
+  .pulse-field label{
+    text-align: left;
+  }
+
+  .pulse-field .bp-input{
+    font-size: 26px;
+    text-align: left;
+    padding-left: 20px;
+  }
+
+  .pulse-unit{
+    position: absolute;
+    right: 18px;
+    bottom: 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  button#submitBtn{
+    width: 100%;
+    border: none;
+    padding: 16px;
+    border-radius: 18px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: #47425a;
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    box-shadow: 0 10px 24px rgba(214,160,190,0.35);
+    cursor: pointer;
+    margin-top: 4px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  button#submitBtn:hover{ transform: translateY(-1px); box-shadow: 0 14px 28px rgba(214,160,190,0.45); }
+  button#submitBtn:active{ transform: translateY(0); }
+  button#submitBtn:disabled{ opacity: 0.6; cursor: default; transform: none; }
+
+  .status-msg{
+    margin-top: 14px;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 600;
+    min-height: 18px;
+  }
+  .status-msg.success{ color: #5b9c7e; }
+  .status-msg.error{ color: #c97b7b; }
+
+  .section-title{
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    margin: 0 0 14px;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+
+  .recent-list{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .entry{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    background: rgba(255,255,255,0.45);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 18px;
+    padding: 14px 16px;
+  }
+
+  .entry .value{
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    width: 84px;
+    text-align:center;
+    flex-shrink:0;
+  }
+
+  .entry .meta{
+    flex: 1;
+    min-width: 0;
+  }
+
+  .entry .tags{
+    display:flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .pill{
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.7);
+    color: var(--ink-soft);
+  }
+
+  .badge{
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 999px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .badge.low{ background: var(--low-bg); color: #b9695f; }
+  .badge.elevated{ background: var(--elevated-bg); color: #91792f; }
+  .badge.high{ background: var(--high-bg); color: #a97a2e; }
+  .badge.crisis{ background: var(--crisis-bg); color: #a5453a; }
+  .badge.ok{ background: var(--ok-bg); color: #4d8a6c; }
+
+  .timestamp{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding: 24px 10px;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+  .empty-state .emoji{ font-size: 28px; display:block; margin-bottom: 8px; }
+
+  .chart-wrap{
+    position: relative;
+    width: 100%;
+    height: 180px;
+  }
+
+  .chart-legend{
+    display:flex;
+    gap: 16px;
+    justify-content:center;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .chart-legend .item{
+    display:flex;
+    align-items:center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .chart-legend .dot{
+    width: 9px; height: 9px; border-radius: 50%;
+  }
+
+  .config-warning{
+    background: rgba(255,255,255,0.6);
+    border: 1px dashed rgba(200,150,170,0.5);
+    border-radius: 16px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+  }
+  .config-warning code{
+    background: rgba(255,255,255,0.7);
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+
+  footer{
+    text-align:center;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="mark">🫀</div>
+    <h1>Pulse & Pressure</h1>
+    <p>A gentle place to log how you're doing today</p>
+  </header>
+
+  <div id="configWarning" class="config-warning" style="display:none;">
+    Connect your Notion backend: set <code>WORKER_URL</code> near the top of the script to your Cloudflare Worker address.
+  </div>
+
+  <section class="card">
+    <div class="bp-row">
+      <div class="bp-field">
+        <label for="systolicValue">Systolic</label>
+        <input type="number" id="systolicValue" class="bp-input" placeholder="120" inputmode="numeric" min="1">
+      </div>
+      <div class="bp-divider">/</div>
+      <div class="bp-field">
+        <label for="diastolicValue">Diastolic</label>
+        <input type="number" id="diastolicValue" class="bp-input" placeholder="80" inputmode="numeric" min="1">
+      </div>
+    </div>
+
+    <div class="bp-field pulse-field" style="margin-bottom: 22px; position: relative;">
+      <label for="pulseValue">Pulse</label>
+      <input type="number" id="pulseValue" class="bp-input" placeholder="e.g. 72" inputmode="numeric" min="1">
+      <span class="pulse-unit">bpm</span>
+    </div>
+
+    <button id="submitBtn">Log reading</button>
+    <div id="statusMsg" class="status-msg"></div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">🕊️ Recent readings</h2>
+    <div id="recentList" class="recent-list">
+      <div class="empty-state">
+        <span class="emoji">🌤️</span>
+        Loading your recent readings…
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">📈 Trend · last 10</h2>
+    <div class="chart-wrap">
+      <canvas id="trendChart" height="160"></canvas>
+    </div>
+    <div id="chartEmpty" class="empty-state" style="display:none;">
+      <span class="emoji">🌤️</span>
+      Not enough readings yet to chart a trend.
+    </div>
+    <div class="chart-legend">
+      <div class="item"><span class="dot" style="background:#9fc9de;"></span>Systolic</div>
+      <div class="item"><span class="dot" style="background:#e3a9c4;"></span>Diastolic</div>
+      <div class="item"><span class="dot" style="background:#c7b3de;"></span>Pulse</div>
+    </div>
+  </section>
+
+  <footer>Categories follow standard blood pressure ranges · always confirm concerning readings with a professional</footer>
+</div>
+
+<script>
+/* ====================== CONFIG ====================== */
+// Set this to your Cloudflare Worker URL, e.g. "https://pulse-pressure-tracker.yourname.workers.dev"
+const WORKER_URL = "";
+/* ====================================================== */
+
+const systolicValue = document.getElementById('systolicValue');
+const diastolicValue = document.getElementById('diastolicValue');
+const pulseValue = document.getElementById('pulseValue');
+const submitBtn = document.getElementById('submitBtn');
+const statusMsg = document.getElementById('statusMsg');
+const recentList = document.getElementById('recentList');
+const configWarning = document.getElementById('configWarning');
+const chartEmpty = document.getElementById('chartEmpty');
+
+let trendChart = null;
+
+if (!WORKER_URL) {
+  configWarning.style.display = 'block';
+}
+
+// Standard blood pressure categories (systolic/diastolic combined)
+function classifyBP(systolic, diastolic) {
+  if (systolic > 180 || diastolic > 120) return { label: 'Crisis range', cls: 'crisis' };
+  if (systolic < 90 || diastolic < 60) return { label: 'Low', cls: 'low' };
+  if (systolic >= 140 || diastolic >= 90) return { label: 'High', cls: 'high' };
+  if (systolic >= 130 || diastolic >= 80) return { label: 'High (Stage 1)', cls: 'high' };
+  if (systolic >= 120 && diastolic < 80) return { label: 'Elevated', cls: 'elevated' };
+  return { label: 'Normal', cls: 'ok' };
+}
+
+function formatTime(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  const diffMs = now - d;
+  const diffMins = Math.round(diffMs / 60000);
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins} min ago`;
+  const diffHrs = Math.round(diffMins / 60);
+  if (diffHrs < 24) return `${diffHrs} hr${diffHrs > 1 ? 's' : ''} ago`;
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' · ' +
+         d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+function renderEntries(entries) {
+  if (!entries || entries.length === 0) {
+    recentList.innerHTML = `
+      <div class="empty-state">
+        <span class="emoji">🌤️</span>
+        No readings yet — your first one will show up here.
+      </div>`;
+    return;
+  }
+
+  recentList.innerHTML = entries.slice(0, 4).map(e => {
+    const { label, cls } = classifyBP(e.systolic, e.diastolic);
+    return `
+      <div class="entry">
+        <div class="value">${e.systolic}/${e.diastolic}</div>
+        <div class="meta">
+          <div class="tags">
+            <span class="pill">${e.pulse} bpm</span>
+          </div>
+          <div class="timestamp">${formatTime(e.loggedAt)}</div>
+        </div>
+        <span class="badge ${cls}">${label}</span>
+      </div>`;
+  }).join('');
+}
+
+function renderChart(entries) {
+  const canvas = document.getElementById('trendChart');
+
+  if (!entries || entries.length === 0) {
+    canvas.style.display = 'none';
+    chartEmpty.style.display = 'block';
+    if (trendChart) { trendChart.destroy(); trendChart = null; }
+    return;
+  }
+
+  canvas.style.display = 'block';
+  chartEmpty.style.display = 'none';
+
+  const ordered = [...entries].reverse();
+  const labels = ordered.map(e => {
+    const d = new Date(e.loggedAt);
+    return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  });
+
+  const ctx = canvas.getContext('2d');
+  if (trendChart) trendChart.destroy();
+
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Systolic',
+          data: ordered.map(e => e.systolic),
+          borderColor: '#9fc9de',
+          backgroundColor: 'rgba(159,201,222,0.12)',
+          borderWidth: 2.5,
+          tension: 0.35,
+          pointRadius: 4,
+          pointBackgroundColor: '#9fc9de',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 1.5,
+          fill: false,
+        },
+        {
+          label: 'Diastolic',
+          data: ordered.map(e => e.diastolic),
+          borderColor: '#e3a9c4',
+          backgroundColor: 'rgba(227,169,196,0.12)',
+          borderWidth: 2.5,
+          tension: 0.35,
+          pointRadius: 4,
+          pointBackgroundColor: '#e3a9c4',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 1.5,
+          fill: false,
+        },
+        {
+          label: 'Pulse',
+          data: ordered.map(e => e.pulse),
+          borderColor: '#c7b3de',
+          backgroundColor: 'rgba(199,179,222,0.10)',
+          borderWidth: 2,
+          borderDash: [4, 4],
+          tension: 0.35,
+          pointRadius: 3,
+          pointBackgroundColor: '#c7b3de',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 1.5,
+          fill: false,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(61,66,86,0.9)',
+          titleFont: { family: 'Quicksand', weight: '600' },
+          bodyFont: { family: 'Quicksand' },
+          padding: 10,
+          cornerRadius: 10,
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#7c8092', font: { family: 'Quicksand', size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 5 },
+        },
+        y: {
+          grid: { color: 'rgba(124,128,146,0.12)' },
+          ticks: { color: '#7c8092', font: { family: 'Quicksand', size: 11 } },
+        },
+      },
+    },
+  });
+}
+
+async function loadEntries() {
+  if (!WORKER_URL) {
+    renderEntries([]);
+    renderChart([]);
+    return;
+  }
+  try {
+    const res = await fetch(`${WORKER_URL}/entries?limit=10`);
+    if (!res.ok) throw new Error('Request failed');
+    const data = await res.json();
+    const entries = data.entries || [];
+    renderEntries(entries);
+    renderChart(entries);
+  } catch (err) {
+    recentList.innerHTML = `
+      <div class="empty-state">
+        <span class="emoji">🌥️</span>
+        Couldn't load recent readings. Check your connection and try again.
+      </div>`;
+    renderChart([]);
+  }
+}
+
+async function submitEntry() {
+  const systolic = parseFloat(systolicValue.value);
+  const diastolic = parseFloat(diastolicValue.value);
+  const pulse = parseFloat(pulseValue.value);
+
+  if (!systolic || !diastolic || !pulse) {
+    statusMsg.textContent = 'Fill in systolic, diastolic, and pulse first.';
+    statusMsg.className = 'status-msg error';
+    return;
+  }
+  if (!WORKER_URL) {
+    statusMsg.textContent = 'Set WORKER_URL in the script before logging readings.';
+    statusMsg.className = 'status-msg error';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  statusMsg.textContent = '';
+  statusMsg.className = 'status-msg';
+
+  try {
+    const res = await fetch(`${WORKER_URL}/entries`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systolic,
+        diastolic,
+        pulse,
+        loggedAt: new Date().toISOString()
+      })
+    });
+    if (!res.ok) throw new Error('Request failed');
+
+    statusMsg.textContent = 'Logged! Nicely done. 🌸';
+    statusMsg.className = 'status-msg success';
+    systolicValue.value = '';
+    diastolicValue.value = '';
+    pulseValue.value = '';
+    await loadEntries();
+  } catch (err) {
+    statusMsg.textContent = "Something didn't save — please try again.";
+    statusMsg.className = 'status-msg error';
+  } finally {
+    submitBtn.disabled = false;
+  }
+}
+
+submitBtn.addEventListener('click', submitEntry);
+[systolicValue, diastolicValue, pulseValue].forEach(el => {
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitEntry(); });
+});
+
+loadEntries();
+</script>
+
+</body>
+</html>
