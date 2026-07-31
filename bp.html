@@ -79,6 +79,35 @@
     max-width: 460px;
   }
 
+  .top-nav{
+    display:flex;
+    gap: 6px;
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 18px;
+    padding: 6px;
+    margin-bottom: 24px;
+  }
+
+  .top-nav a{
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    padding: 10px 8px;
+    border-radius: 13px;
+    transition: all 0.2s ease;
+  }
+
+  .top-nav a.active{
+    background: linear-gradient(135deg, var(--sky), var(--blush));
+    color: #47425a;
+    box-shadow: 0 4px 12px rgba(214,160,190,0.3);
+  }
+
   header.hero{
     text-align: center;
     margin-bottom: 28px;
@@ -352,6 +381,12 @@
 <div class="blob b3"></div>
 
 <div class="wrap">
+  <nav class="top-nav">
+    <a href="#">🩸 Blood Sugar</a>
+    <a href="#" class="active">🫀 Blood Pressure</a>
+    <a href="#">🌸 Period</a>
+  </nav>
+
   <header class="hero">
     <div class="mark">🫀</div>
     <h1>Pulse & Pressure</h1>
